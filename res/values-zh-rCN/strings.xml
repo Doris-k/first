@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">第二</string>
+    <string name="text_android">你好</string>
+    <string name="name_android">亲爱的王欣奕</string>
+    <string name="blessing_android">我亲爱的女儿，生日快乐。</string>
+    <string name="person_android">你的爸妈</string>
+    <string name="input_tip">输入提示</string>
+    <string name="text_tep">请输入摄氏度</string>
+    <string name="text_fahrenheit">转换为华氏温度</string>
+    <string name="text_view">结果是：</string>
+    <string name="TeamA">队伍A</string>
+    <string name="Pointone">加1分</string>
+    <string name="Pointtwo">加2分</string>
+    <string name="Pointthree">加3分</string>
+    <string name="Reset">重置</string>
+    <string name="zero">0</string>
+</resources>
