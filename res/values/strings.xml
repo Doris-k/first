@@ -31,4 +31,6 @@
     <string name="title_activity_main4">MainActivity</string>
     <string name="config">Config</string>
     <string name="save">Save</string>
+    <string name="menu_setting">Setting</string>
+    <string name="menu_return">Return</string>
 </resources>
