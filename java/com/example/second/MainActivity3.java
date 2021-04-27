@@ -18,13 +18,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActivity implements Runnable {
     private static final String TAG = "MainActivity3";
@@ -33,6 +38,7 @@ public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActiv
     float dollarRate = 0.15f;
     float euroRate = 0.128f;
     float wonRate = 171.78f;
+    String todayStr ="00";
     Handler handler;//线程间数据同步
 
     @SuppressLint("HandlerLeak")
@@ -48,6 +54,7 @@ public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActiv
         dollarRate= sharedPreferences.getFloat("dollar_rate",0.0f);
         euroRate= sharedPreferences.getFloat("euro_rate",0.0f);
         wonRate= sharedPreferences.getFloat("won_rate",0.0f);
+        todayStr=sharedPreferences.getString("update_date","00");
         //获取SharedPreferences对象
 
         Thread t = new Thread(this);
@@ -57,9 +64,18 @@ public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActiv
             @Override
             public  void  handleMessage(@NonNull Message msg){
                 if(msg.what==7){
-                    String str = (String)msg.obj;//（）要和信息类型相同
-                    Log.i(TAG,"handleMessage:get str ="+str);
-                    result.setText(str);//把消息显示在settext上
+                    //String str = (String)msg.obj;//（）要和信息类型相同
+                    //Log.i(TAG,"handleMessage:get str ="+str);
+                    //result.setText(str);//把消息显示在settext上
+                    Bundle bd1=(Bundle)msg.obj;
+                    dollarRate=bd1.getFloat("dollar-rate");
+                    euroRate=bd1.getFloat("euro-rate");
+                    wonRate=bd1.getFloat("won-rate");
+
+                    Log.i(TAG,"handleMessage:dollarRate:"+dollarRate);
+                    Log.i(TAG,"handleMessage:euroRate:"+euroRate);
+                    Log.i(TAG,"handleMessage:wonRate:"+wonRate);
+
                 }
                 super.handleMessage(msg);
 
@@ -147,6 +163,7 @@ public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActiv
             editor.putFloat("dollar_rate",dollarRate);
             editor.putFloat("euro_rate",euroRate);
             editor.putFloat("won_rate",wonRate);
+            editor.putString("update_date",todayStr);
             editor.apply();
             //修改保存内容
 
@@ -179,23 +196,56 @@ public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActiv
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //线程中完成的任务,获取网络数据
-        URL url=null;
-        try {
-            url= new URL("www.usd-cny/bankofchina.htm");
-            HttpURLConnection http=(HttpURLConnection) url.openConnection();
-            InputStream in = http.getInputStream();
-            String html =inputStream2String(in);//将网页上的输入流用inputStream2String()转换成字符串
-            Log.i(TAG,"run:html="+html);
-        }catch(MalformedURLException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
+        Date d =new Date();
+        SimpleDateFormat time = new SimpleDateFormat("yyyy-MM-dd");
+        Log.i(TAG,"run:"+time);
+        String todayStr=time.format(d);
+        if(d.equals(todayStr)){
+            Log.i(TAG,"run:"+time);
+        }else {
+            Document doc = null;
+            try {
+                String url = "http://www.usd-cny.com/bankofchina.htm";
+                doc = Jsoup.connect(url).get();
+                Log.i(TAG, "run:" + doc.title());
+                Element tables = doc.getElementsByTag("table").first();
+                Log.i(TAG, "run:" + tables);
+                Elements trs = tables.getElementsByTag("tr");
+                Log.i(TAG, "sss" + trs);
+                for (Element td : trs) {
+                    Elements tds = td.getElementsByTag("td");
+                    if (tds.size() > 0) {
+                        if (tds.get(0).text().equals("美元")) {
+                            dollarRate = 100 / Float.parseFloat(tds.get(1).text());
+                            Log.i(TAG, "run:=" + dollarRate);
+                        }
+                        if (tds.get(0).text().equals("欧元")) {
+                            euroRate = 100 / Float.parseFloat(tds.get(1).text());
+                            Log.i(TAG, "run:=" + euroRate);
+                        }
+                        if (tds.get(0).text().equals("韩元")) {
+                            wonRate = 100 / Float.parseFloat(tds.get(1).text());
+                            Log.i(TAG, "run:=" + wonRate);
+                        }
+
+
+                    }
+                }
+                SharedPreferences sp = getSharedPreferences("myrate", Activity.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putString("update_date", todayStr);
+                editor.apply();
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        //返回数据给主线程
-        Message msg = handler.obtainMessage(7);//填写信息
+      /*  Message msg = handler.obtainMessage(7);//填写信息
         msg.obj="from message";//填写内容
-        handler.sendMessage(msg);//发送消息
+        handler.sendMessage(msg);//发送消息*/
 
     }
 
