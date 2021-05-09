@@ -9,14 +9,14 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity2 extends AppCompatActivity {
     private TextView texta;
     int scorea = 0;
-    int scoreb=0;
+    int scoreb =  0;
     private TextView textb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main6);
-        texta = findViewById(R.id.textView3);
-        textb = findViewById(R.id.textView4);
+        setContentView(R.layout.activity_main9);
+        texta = findViewById(R.id.scorea);
+        textb = findViewById(R.id.scoreb);
 
 
 
