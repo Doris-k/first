@@ -31,7 +31,7 @@ import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MainActivity3<dollarRate, euroRate, wonRate> extends AppCompatActivity implements Runnable {
+public class MainActivity3 extends AppCompatActivity implements Runnable {
     private static final String TAG = "MainActivity3";
     EditText input;
     TextView result;
