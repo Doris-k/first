@@ -13,6 +13,7 @@ public class MyListTask extends AppCompatActivity {
     TextView tw1;
     TextView tw2;
     EditText et;
+    TextView tw3;
 
 
     @Override
@@ -24,13 +25,14 @@ public class MyListTask extends AppCompatActivity {
         rate=Float.parseFloat(rate2);
         tw1=(TextView)findViewById(R.id.textView4);
         tw2=(TextView)findViewById(R.id.textView5);
+        tw3=(TextView)findViewById(R.id.textView7);
         et=findViewById(R.id.reditTextNumber);
         tw1.setText(detail);
-       // tw2.setText(rate2);
+        tw2.setText(rate2);
 
     }
     private  void show(float s){
-        tw2.setText(String.valueOf(s));
+        tw3.setText(String.valueOf(s));
     }
     public  void  caculate(View v){
         Float rmb=Float.parseFloat(et.getText().toString());
