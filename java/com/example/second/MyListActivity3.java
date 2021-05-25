@@ -1,6 +1,8 @@
 package com.example.second;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,11 +26,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MyListActivity3 extends ListActivity implements Runnable,AdapterView.OnItemClickListener {
+public class MyListActivity3 extends ListActivity implements Runnable,AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
     //implements AdapterView.OnItemClickListener
     Handler handler;
     private static final String TAG = "MyListActivity3";
     private ArrayList<HashMap<String, String>> listItems;//存放文字、图片信息
+    private ArrayList<HashMap<String, String>> rateList;
     private SimpleAdapter listItemAdapter;//适配器
     private int msgWhat=6;
 
@@ -54,8 +57,8 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
         //setListAdapter(adapter);
         // getListView().setOnItemClickListener(this);
         //initListView();
-        this.setListAdapter(listItemAdapter);
-        MyAdapter adapter =new MyAdapter(this,R.layout.list_item,listItems);
+        //this.setListAdapter(listItemAdapter);
+        //MyAdapter adapter =new MyAdapter(this,R.layout.list_item,listItems);
 
         Thread t=new Thread(this);
         t.start();
@@ -66,7 +69,7 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == msgWhat) {
                     List<HashMap<String, String>> List2 = (List<HashMap<String, String>>) msg.obj;
-                    SimpleAdapter listItemAdapter= new SimpleAdapter(MyListActivity3.this,
+                     listItemAdapter= new SimpleAdapter(MyListActivity3.this,
                             List2,//listItem 数据源
                             R.layout.list_item,
                             new String[]{"ItemTitle", "ItemDetail"},
@@ -78,6 +81,7 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
 
         };
           getListView().setOnItemClickListener(this);
+          getListView().setOnItemLongClickListener(this);
 
     }
 
@@ -86,7 +90,7 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
 
 
 
-   /* private  void initListView(){
+   /*private  void initListView(){
         listItems=new ArrayList<HashMap<String, String>>();
         for (int i=0; i<10;i++) {
             HashMap<String, String> map = new HashMap<String, String>();
@@ -105,7 +109,7 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
     }*/
     @Override
     public void run() {
-        List<HashMap<String, String>> rateList = new ArrayList<HashMap<String, String>>();
+        rateList = new ArrayList<HashMap<String, String>>();
 
         Log.i(TAG, "run:..........");
         boolean marker=false;
@@ -166,6 +170,9 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.i(TAG,"onItemClick:position="+position);
+
+        //rateList.remove(position);
+        //listItemAdapter.notifyDataSetChanged();
         Object itemAtPosition=getListView().getItemAtPosition(position);
         HashMap<String,String>map =(HashMap<String, String>)itemAtPosition;
         String title=map.get("ItemTitle");
@@ -176,5 +183,31 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
         intent.putExtra("title",title);
         intent.putExtra("detail",detail);
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        Log.i(TAG, "onItemLongClick: 长按事件处理");
+        //对话框提示
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("提示")
+                .setMessage("请确认是否删除当前数据")
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.i(TAG, "onClick: onClick:对话框事件处理");
+                        //删除数据项
+
+                        //rateList.remove(getListView().getItemAtPosition(position));
+                        rateList.remove(position);
+                        listItemAdapter.notifyDataSetChanged();
+
+                    }
+                }).setNegativeButton("否",null);
+
+        builder.create().show();
+        return true;
     }
 }
