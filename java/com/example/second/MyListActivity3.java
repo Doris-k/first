@@ -2,8 +2,10 @@ package com.example.second;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,24 +22,35 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
+//有问题，SQLite数据库相关
 public class MyListActivity3 extends ListActivity implements Runnable,AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
     //implements AdapterView.OnItemClickListener
     Handler handler;
     private static final String TAG = "MyListActivity3";
     private ArrayList<HashMap<String, String>> listItems;//存放文字、图片信息
-    private ArrayList<HashMap<String, String>> rateList;
+    //private ArrayList<HashMap<String, String>> rateList;
+    private List<RateItem> rateList;
     private SimpleAdapter listItemAdapter;//适配器
     private int msgWhat=6;
+    private  String logDate="";
+    private final String DATE_SP_KEY="lastRateDateStr";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences sp=getSharedPreferences("myrate", Context.MODE_PRIVATE);
+        logDate=sp.getString(DATE_SP_KEY,"");
+        Log.i("List","lastRateDateStr="+logDate);
+
         //setContentView(R.layout.activity_my_list3);
         // ListView list3 = findViewById(R.id.mylist3);
         //data
@@ -109,62 +122,101 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
     }*/
     @Override
     public void run() {
-        rateList = new ArrayList<HashMap<String, String>>();
-
-        Log.i(TAG, "run:..........");
-        boolean marker=false;
-        URL url = null;
-        try {
-
-            Thread.sleep(3000);
-            Document doc = Jsoup.connect("http://www.usd-cny.com/bankofchina.htm").get();
-            Log.i(TAG, "run:time=" + doc.title());//获取时间
-
-            Element publicTime = doc.getElementsByClass("time").first();
-            Log.i(TAG, "run:time=" + publicTime.html());
-
-            Element tables = doc.getElementsByTag("table").first();
-            Log.i(TAG, "run:" + tables);
-            Elements trs = tables.getElementsByTag("tr");
-            Log.i(TAG, "sss" + trs);
-            for (Element td : trs) {
-                Elements tds = td.getElementsByTag("td");
-                if (tds.size() > 0) {
-                    String str = tds.first().text();
-                    Log.i(TAG, "run:td=" + str);
-
-                    String val = tds.get(5).text();
-                    Log.i(TAG, "run:rate=" + val);
-
-                    HashMap<String, String> map = new HashMap<String, String>();
-                    map.put("ItemTitle", str);
-                    map.put("ItemDetail", val);
-                    rateList.add(map);
-                    Log.i(TAG, "run:str" + "=>" + rateList);
-
-                }
-                marker=true;
+        Log.i("list","run:....");
+        List<String>retList=new ArrayList<String>();
+        Message msg=handler.obtainMessage();
+        String curDateStr=(new SimpleDateFormat("yyyy-MM-dd")).format(new Date());
+        Log.i("run","curDateStr:"+curDateStr+"logDate:"+logDate);
+        if(curDateStr.equals(logDate)){
+            //如果相等，则不从网络中获取数据
+            Log.i("run","日期相等，从数据库中获取数据");
+            RateManager rateManager=new RateManager(MyListActivity3.this);
+            for(RateItem rateItem:rateManager.listAll()){
+                retList.add(rateItem.getCurname()+"=>"+rateItem.getCurrate());
             }
+        }else{
+
+             Log.i(TAG, "run:..........");
+//             boolean marker=false;
+//             URL url = null;
+             try {
+                 //rateList = new ArrayList<HashMap<String, String>>();
+                 rateList=new ArrayList<RateItem>() ;
+                 URL url=new URL("http://www.usd-cny.com/bankofchina.htm");
+                 HttpURLConnection httpConn=(HttpURLConnection) url.openConnection();
+                 InputStream in =httpConn.getInputStream();
+                 String retStr =IOUtils.toString(in,"gb2312");
+                 Document doc =Jsoup.parse(retStr);
+                 Elements tables=doc.getElementsByTag("table");
+
+                 Element retTable=tables.get(5);
+                 Elements tds=retTable.getElementsByTag("td");
+                 int tdSize=tds.size();
+                 for (int i=0;i<tdSize;i+=8){
+                     Element td1=tds.get(i);
+                     Element td2=tds.get(i+5);
+                     float val =Float.parseFloat(td2.text());
+                     val=100/val;
+                     retList.add(td1.text()+"->"+val);
+
+                     RateItem rateItem=new RateItem(td1.text(),td2.text());
+                     rateList.add(rateItem);
+                 }
+//                 Thread.sleep(3000);
+//                 Document doc = Jsoup.connect("http://www.usd-cny.com/bankofchina.htm").get();
+//                 Log.i(TAG, "run:time=" + doc.title());//获取时间
+//
+//                 Element publicTime = doc.getElementsByClass("time").first();
+//                 Log.i(TAG, "run:time=" + publicTime.html());
+//
+//                 Element tables = doc.getElementsByTag("table").first();
+//                 Log.i(TAG, "run:" + tables);
+//                 Elements trs = tables.getElementsByTag("tr");
+//                 Log.i(TAG, "sss" + trs);
+//                 for (Element td : trs) {
+//                      Elements tds = td.getElementsByTag("td");
+//                      if (tds.size() > 0) {
+//                        String str = tds.first().text();
+//                        Log.i(TAG, "run:td=" + str);
+//
+//                        String val = tds.get(5).text();
+//                        Log.i(TAG, "run:rate=" + val);
+//                        rateList.add(new RateItem());
+////                        HashMap<String, String> map = new HashMap<String, String>();
+////                        map.put("ItemTitle", str);
+////                        map.put("ItemDetail", val);
+////                        rateList.add(map);
+//                        Log.i(TAG, "run:str" + "=>" + rateList);
+
+
+//                marker=true;
+                RateManager rateManager=new RateManager(MyListActivity3.this);
+                rateManager.deleteAll();
+                Log.i("db","删除所有记录");
+                rateManager.addAll(rateList);
+                Log.i("db","添加新记录集");
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-        Message msg = handler.obtainMessage();
+
+        msg.obj=retList;
         msg.what=msgWhat;
-
-
-       if(marker){
-            msg.arg1=1;
-
-        }else{
-            msg.arg1=0;
-        }
-
-        msg.obj=rateList;
         handler.sendMessage(msg);
+
+
+//       if(marker){
+//            msg.arg1=1;
+//
+//        }else{
+//            msg.arg1=0;
+//        }
+//
+//        msg.obj=rateList;
+//        handler.sendMessage(msg);
+        }
 
     }
     @Override
@@ -209,5 +261,11 @@ public class MyListActivity3 extends ListActivity implements Runnable,AdapterVie
 
         builder.create().show();
         return true;
+    }
+
+    private static class IOUtils {
+        public static String toString(InputStream in, String gb2312) {
+            return gb2312;
+        }
     }
 }

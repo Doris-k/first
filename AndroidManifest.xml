@@ -12,6 +12,41 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Second"
         android:usesCleartextTraffic="true">
+        <activity android:name=".ThirdFragment">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".SecondFragment">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".FirstFragment">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MyPagesActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MyPerfectProject">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".GridViewActivity5">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,7 +54,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MyListTask" android:theme="@style/Theme.AppCompat.Dialog">
+        <activity
+            android:name=".MyListTask"
+            android:theme="@style/Theme.AppCompat.Dialog">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
